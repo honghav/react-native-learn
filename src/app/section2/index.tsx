@@ -1,9 +1,23 @@
+import { LoginDTO } from "@/model/project1/auth/login.dto";
+import { loginServive } from "@/services/project1/login";
 import { Entypo, Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Label } from "expo-router/build/react-navigation";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 
 export default function Section2() {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const router = useRouter();
+
+    const loginPress = async (data: LoginDTO) => {
+        const success = await loginServive(data);
+        if (success) {
+            router.push("../section2/dashboard");
+        }
+    };
     return (
         <ScrollView className=" p-4 bg-slate-50 flex-1  rounded-xl shadow-sm border border-slate-200">
             <View style={styles.container} className="" >
@@ -20,14 +34,14 @@ export default function Section2() {
                 <View style={styles.formContainer}>
                     <View  >
                         <Label style={styles.labelInput} >Email</Label>
-                        <TextInput style={styles.inputFill} placeholder="Email" />
+                        <TextInput style={styles.inputFill} placeholder="Email" value={username} onChangeText={setUsername} />
                     </View>
                     <View  >
                         <Label style={styles.labelInput} >Password</Label>
-                        <TextInput style={styles.inputFill} placeholder="Password" />
+                        <TextInput style={styles.inputFill} placeholder="Password" value={password} onChangeText={setPassword} />
                     </View>
                     <View className="h-10 w-full">
-                        <TouchableOpacity style={styles.button} onPress={() => null}>
+                        <TouchableOpacity style={styles.button} onPress={() => loginPress({ username, password })}>
                             <Text className="text-white">Login </Text>
                         </TouchableOpacity>
                     </View>
@@ -35,7 +49,6 @@ export default function Section2() {
                 <Text className="text-center text-sm font-medium mt-6">Don't have an account? <Text className="font-semibold underline">Sign Up</Text></Text>
             </View>
         </ScrollView>
-
     )
 }
 

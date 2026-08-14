@@ -1,6 +1,6 @@
 import { LoginDTO } from "./login.dto";
 
-const loginData: LoginDTO[] = [
+export const loginData: LoginDTO[] = [
     {
         username: 'admin',
         password: '1111'
