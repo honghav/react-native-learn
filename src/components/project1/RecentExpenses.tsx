@@ -40,14 +40,14 @@ export function ExpenseRow({
 }
 
 export default function RecentExpenses({
-    items = expenseItemData,
+    items
 }: RecentExpensesProps) {
     // If an array of items is provided, render the list
     if (items && items.length > 0) {
         return (
             <View className="w-full">
                 {items.map((item, index) => (
-                    <ExpenseRow key={item.id || index} {...item} />
+                    <ExpenseRow key={item.id ? `${item.id}-${index}` : `expense-${index}`} {...item} />
                 ))}
             </View>
         );

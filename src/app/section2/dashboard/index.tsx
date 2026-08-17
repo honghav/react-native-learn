@@ -2,6 +2,7 @@ import MonthlyBudgetCard from "@/components/project1/monthlyBudgetCard";
 import NavBarProject1 from "@/components/project1/navbar";
 import RecentExpenses from "@/components/project1/RecentExpenses";
 import ViewContainer from "@/components/viewContainer";
+import { expenseItemData } from "@/model/project1/expense/expense.data";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -53,12 +54,22 @@ export default function DashboardProject1() {
                         <Text>History</Text>
                     </View>
                 </View>
-                <RecentExpenses />
+                <RecentExpenses items={expenseItemData} />
             </ScrollView>
 
             <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => { router.push('/section2/expense_form/expense_form') }}
+                onPress={() => { router.push('../section2/report') }}
+                style={[
+                    style.btnReport,
+                    { position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any }
+                ]}
+            >
+                <AntDesign name="book" size={26} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => { router.push('../section2/expense_form') }}
                 style={[
                     style.btnAddExpense,
                     { position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any }
@@ -91,7 +102,25 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         zIndex: 9999,
         // Elevation for Android
-        elevation: 6,
+        elevation: 16,
+        // Shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.5,
+    },
+    btnReport: {
+        bottom: 72,
+        right: 8,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#1E3A8A',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        // Elevation for Android
+        elevation: 16,
         // Shadow for iOS
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },

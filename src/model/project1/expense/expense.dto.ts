@@ -6,6 +6,7 @@ export interface ExpenseItem {
     title: string;
     category: ExpenseCategoryDTO;
     amount: number | string;
+    date?: Date;
 };
 
 export interface RecentExpensesProps {
@@ -14,4 +15,5 @@ export interface RecentExpensesProps {
     title?: string;
     category?: ExpenseCategoryDTO;
     amount?: number | string;
+    date?: Date;
 };
