@@ -1,10 +1,10 @@
 import { listData, sectionListData } from "@/model/section1/section1.data";
 import { ListDTO } from "@/model/section1/section1.dto";
 import { Ionicons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Button, FlatList, Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, SectionList, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, VirtualizedList } from "react-native";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { Alert, Button, FlatList, Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, VirtualizedList } from "react-native";
 
 export default function SessionI() {
     const router = useRouter()
@@ -105,7 +105,7 @@ export default function SessionI() {
             <Text className="text-lg font-bold my-2 text-slate-800">Example 5: Modal</Text>
             <Modal
                 animationType="fade"
-                transparent={true}
+                transparent={false}
                 visible={modalVisible}
                 onRequestClose={() => {
                     Alert.alert('Modal has been closed.');

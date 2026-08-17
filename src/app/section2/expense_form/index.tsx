@@ -1,21 +1,46 @@
+import CategoryExpenseModal from "@/components/project1/CategoryExpenseModal";
 import DatePickerCalendar from "@/components/project1/DatePickerCalendar";
 import NavBarProject1 from "@/components/project1/navbar";
 import ViewContainer from "@/components/viewContainer";
-import { expenseCategoryData } from "@/model/project1/expense_category/expense_category.data";
+import { CreateExpenseItem } from "@/model/project1/expense/expense.dto";
+import { ExpenseCategoryDTO } from "@/model/project1/expense_category/expense_category.dto";
+import { handleGetExpenseCategory } from "@/services/project1/categoryService";
+import { handleCreateExpense } from "@/services/project1/expense/expenseService";
 import { AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function ExpenseForm() {
     const [amount, setAmount] = useState("");
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-        expenseCategoryData[0]?.id || ""
-    );
+    const [title, setTitle] = useState("");
+    const [categories, setCategories] = useState<ExpenseCategoryDTO[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+
     // Initialize date to today's date (YYYY-MM-DD)
     const todayStr = new Date().toISOString().split("T")[0];
     const [date, setDate] = useState(todayStr);
     const [showCalendarPicker, setShowCalendarPicker] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+
+    const fetchCategories = async () => {
+        try {
+            setLoadingCategories(true);
+            const data = await handleGetExpenseCategory();
+            setCategories(data);
+            if (data.length > 0 && !selectedCategoryId) {
+                setSelectedCategoryId(data[0].id);
+            }
+        } catch (error) {
+            console.error("Failed to load categories:", error);
+        } finally {
+            setLoadingCategories(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const handleSelectToday = () => {
         setDate(todayStr);
@@ -29,13 +54,39 @@ export default function ExpenseForm() {
         setShowCalendarPicker(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        setLoadingCategories(true);
+
         if (!amount || parseFloat(amount) <= 0) {
             alert("Please enter a valid expense amount");
             return;
         }
-        // Save action logic here
-        router.back();
+        if (!title.trim()) {
+            alert("Please enter an objective for the expense");
+            return;
+        }
+
+        const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+        if (!selectedCategory) {
+            alert("Please select a category");
+            return;
+        }
+
+        const newExpense: CreateExpenseItem = {
+            title: title.trim(),
+            amount: parseFloat(amount),
+            category: selectedCategory,
+            date: date,
+        };
+        try {
+            console.log("handleSAVE", newExpense);
+            await handleCreateExpense(newExpense)
+        } catch (error) {
+            setLoadingCategories(false);
+            console.error("Error creating expense:", error);
+        } finally {
+            setLoadingCategories(false);
+        }
     };
 
     return (
@@ -72,32 +123,41 @@ export default function ExpenseForm() {
                         <Text className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">
                             Category
                         </Text>
-                        <View className="flex-row flex-wrap gap-3">
-                            {expenseCategoryData.map((category) => {
-                                const isSelected = selectedCategoryId === category.id;
-                                return (
-                                    <TouchableOpacity
-                                        key={category.id}
-                                        activeOpacity={0.7}
-                                        onPress={() => setSelectedCategoryId(category.id)}
-                                        className={`h-16 w-16 items-center justify-center rounded-2xl shadow-sm border-2 ${isSelected
-                                            ? "border-blue-600 bg-blue-50"
-                                            : "border-slate-200 bg-slate-100"
-                                            }`}
-                                    >
-                                        <AntDesign
-                                            name={category.iconName}
-                                            size={28}
-                                            color={isSelected ? "#2563eb" : "#64748b"}
-                                        />
-                                    </TouchableOpacity>
-                                );
-                            })}
+                        <View className="flex-row flex-wrap gap-3 items-center">
+                            {loadingCategories ? (
+                                <View className="py-4 items-center justify-center w-full">
+                                    <ActivityIndicator size="small" color="#2563eb" />
+                                </View>
+                            ) : categories.length === 0 ? (
+                                <Text className="text-slate-400 text-xs">No categories found. Tap + to add one.</Text>
+                            ) : (
+                                categories.map((category) => {
+                                    const isSelected = selectedCategoryId === category.id;
+                                    return (
+                                        <TouchableOpacity
+                                            key={category.id}
+                                            activeOpacity={0.7}
+                                            onPress={() => setSelectedCategoryId(category.id)}
+                                            className={`h-16 w-16 items-center justify-center rounded-2xl shadow-sm border-2 ${isSelected
+                                                ? "border-blue-600 bg-blue-50"
+                                                : "border-slate-200 bg-slate-100"
+                                                }`}
+                                        >
+                                            <AntDesign
+                                                name={category.iconName as any}
+                                                size={28}
+                                                color={isSelected ? "#2563eb" : "#64748b"}
+                                            />
+                                        </TouchableOpacity>
+                                    );
+                                })
+                            )}
 
                             {/* Add New Category Button */}
                             <TouchableOpacity
                                 activeOpacity={0.7}
                                 className="h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 active:bg-slate-100"
+                                onPress={() => setShowModal(true)}
                             >
                                 <AntDesign name="plus" size={24} color="#94a3b8" />
                             </TouchableOpacity>
@@ -183,7 +243,7 @@ export default function ExpenseForm() {
                         )}
 
                         <View className="w-full py-2 border-2 border-slate-200 my-4 rounded-2xl shadow-sm bg-white " >
-                            <TextInput className="h-8 px-4 focus:outline-none focus:border-none" placeholder="Your Objective OF Expense" />
+                            <TextInput className="h-8 px-4 focus:outline-none focus:border-none" placeholder="Your Objective OF Expense" value={title} onChangeText={setTitle} />
                         </View>
                     </View>
 
@@ -193,11 +253,23 @@ export default function ExpenseForm() {
                 <TouchableOpacity
                     onPress={handleSave}
                     activeOpacity={0.8}
+                    disabled={loadingCategories}
                     className="w-full bg-blue-600 py-4 rounded-2xl items-center justify-center shadow-md my-4 active:bg-blue-700"
                 >
-                    <Text className="text-white font-bold text-base">Save Expense</Text>
+                    <Text className="text-white font-bold text-base">{loadingCategories ? 'Creating...' : 'Save Expense'}</Text>
                 </TouchableOpacity>
             </ScrollView>
+            <Modal
+                visible={showModal}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setShowModal(false)}
+            >
+                <CategoryExpenseModal
+                    close={(value) => setShowModal(value)}
+                    onSuccess={fetchCategories}
+                />
+            </Modal>
         </View>
     );
 }

@@ -1,5 +1,6 @@
-import { ExpenseCategoryDTO } from "./expense_category.dto";
 
+
+import { ExpenseCategoryDTO } from "./expense_category.dto";
 
 export const expenseCategoryData: ExpenseCategoryDTO[] = [
     {
@@ -14,4 +15,4 @@ export const expenseCategoryData: ExpenseCategoryDTO[] = [
         iconName: "arrow-down",
         color: "blue",
     },
-];
+];

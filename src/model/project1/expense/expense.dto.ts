@@ -1,4 +1,3 @@
-import { AntDesign } from "@expo/vector-icons";
 import { ExpenseCategoryDTO } from "../expense_category/expense_category.dto";
 
 export interface ExpenseItem {
@@ -7,6 +6,12 @@ export interface ExpenseItem {
     category: ExpenseCategoryDTO;
     amount: number | string;
     date?: Date;
+};
+export interface CreateExpenseItem {
+    title: string;
+    category: ExpenseCategoryDTO;
+    amount: number | string;
+    date: Date | string;
 };
 
 export interface RecentExpensesProps {
