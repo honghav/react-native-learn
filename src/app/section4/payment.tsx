@@ -52,7 +52,7 @@ export default function Payment() {
         }
     };
 
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Start Real-Time Auto Checking (Polls CutLuy REST API every 3 seconds)
     const handleStartAutoCheck = (paymentId: string) => {
