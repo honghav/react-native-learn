@@ -7,6 +7,9 @@ import {
     addDoc as webAddDoc,
     collection as webCollection,
     getDocs as webGetDocs,
+    onSnapshot as webOnSnapshot,
+    orderBy as webOrderBy,
+    query as webQuery,
     serverTimestamp as webServerTimestamp
 } from "firebase/firestore";
 
@@ -16,6 +19,9 @@ import {
     addDoc as nativeAddDoc,
     collection as nativeCollection,
     getDocs as nativeGetDocs,
+    onSnapshot as nativeOnSnapshot,
+    orderBy as nativeOrderBy,
+    query as nativeQuery,
     serverTimestamp as nativeServerTimestamp
 } from "@react-native-firebase/firestore";
 
@@ -33,6 +39,61 @@ export const getWebDb = () => {
     return getWebFirestore(app);
 };
 
+export interface ChatMessageDTO {
+    id?: string;
+    text: string;
+    sender: string;
+    createdAt?: any;
+}
+
+// Real-time Chat Firestore Listener
+export const subscribeToRealtimeChat = (onUpdate: (messages: ChatMessageDTO[]) => void) => {
+    try {
+        if (Platform.OS === "web") {
+            const db = getWebDb();
+            const q = webQuery(webCollection(db, "messages"), webOrderBy("createdAt", "asc"));
+            return webOnSnapshot(q, (snapshot) => {
+                const list: ChatMessageDTO[] = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...(doc.data() as any),
+                }));
+                onUpdate(list);
+            });
+        } else {
+            const db = getNativeFirestore();
+            const q = nativeQuery(nativeCollection(db, "messages"), nativeOrderBy("createdAt", "asc"));
+            return nativeOnSnapshot(q, (snapshot) => {
+                const list: ChatMessageDTO[] = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...(doc.data() as any),
+                }));
+                onUpdate(list);
+            });
+        }
+    } catch (error) {
+        console.error("Error subscribing to realtime chat:", error);
+        return () => {};
+    }
+};
+
+// Send real-time chat message
+export const sendChatMessage = async (text: string, sender: string) => {
+    if (Platform.OS === "web") {
+        const db = getWebDb();
+        return await webAddDoc(webCollection(db, "messages"), {
+            text,
+            sender,
+            createdAt: webServerTimestamp(),
+        });
+    } else {
+        const db = getNativeFirestore();
+        return await nativeAddDoc(nativeCollection(db, "messages"), {
+            text,
+            sender,
+            createdAt: nativeServerTimestamp(),
+        });
+    }
+};
 
 // Cross-platform helper: Works on Web AND Native (Android / iOS)
 export const createDataFirestore = async (collection: string, body: any) => {
@@ -52,15 +113,14 @@ export const createDataFirestore = async (collection: string, body: any) => {
         return docRef;
     }
 };
+
 export const fetchDataFirestore = async (collectionName: string) => {
     try {
         if (Platform.OS === "web") {
-            // Web: Using Firebase JS SDK (v9+ modular syntax)
             const db = getWebDb();
             const response = await webGetDocs(webCollection(db, collectionName));
             return response;
         } else {
-            // Native: Using @react-native-firebase/firestore (v26+ modular syntax)
             const db = getNativeFirestore();
             const response = await nativeGetDocs(nativeCollection(db, collectionName));
             return response;
